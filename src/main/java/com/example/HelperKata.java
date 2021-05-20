@@ -97,15 +97,10 @@ public class HelperKata {
     }
 
     private static String typeBono(String bonoIn) {
-        return  bonoCharacterAndLength(bonoIn)
-                ? ValidateCouponEnum.EAN_13.getTypeOfEnum()
-                : bonoStartWithAndLength(bonoIn)
-                ? ValidateCouponEnum.EAN_39.getTypeOfEnum()
-                : ValidateCouponEnum.ALPHANUMERIC.getTypeOfEnum();
-//        return Optional.of(bonoIn)
-//                .filter(HelperKata::bonoCharacterAndLength)
-//                .map(er -> ValidateCouponEnum.EAN_39.getTypeOfEnum())
-//                .orElse(ValidateCouponEnum.ALPHANUMERIC.getTypeOfEnum());
+        return Optional.of(bonoIn)
+                .filter(HelperKata::bonoCharacterAndLength)
+                .map(er -> ValidateCouponEnum.EAN_39.getTypeOfEnum())
+                .orElse(ValidateCouponEnum.ALPHANUMERIC.getTypeOfEnum());
     }
 
     private static boolean bonoCharacterAndLength(String bonoIn){
