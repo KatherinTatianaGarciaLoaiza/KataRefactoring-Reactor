@@ -1,18 +1,16 @@
 
-X	java:S125Q"<This block of commented-out lines of code should be removed.(ƒø8·â³—˜/
-g
-java:S3358‡"DExtract this nested ternary operation into an independent statement.(ÔÄßŒşÿÿÿÿ8Èµ–˜/
-]	java:S125"<This block of commented-out lines of code should be removed.(ŒÈôúÿÿÿÿ8Ë§‰š˜/
 s
-java:S3008"XRename this field "ANTERIOR_BONO" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(§ÆÂÌıÿÿÿÿ
-U
-java:S1144U"3Remove this unused private "createFluxFrom" method.(ã’â¢üÿÿÿÿ8ƒÀ©¨˜/
-W	java:S125'"<This block of commented-out lines of code should be removed.(®«8Û¡Šš˜/
-\
-java:S1118":Add a private constructor to hide the implicit public one.(–ìÓùÿÿÿÿ8ÙŠÔ–˜/
-Z
-java:S3358ˆ"DExtract this nested ternary operation into an independent statement.(õÖÛ
-[
-java:S4973J"9Use the "equals" method if value comparison was intended.(›ˆæàıÿÿÿÿ8ê×ÿ–˜/
+java:S3008"XRename this field "ANTERIOR_BONO" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(§ÆÂÌıÿÿÿÿ
 a
-java:S3358b"DExtract this nested ternary operation into an independent statement.(¡ÉÕÍ8Èµ–˜/
+java:S3358‰"DExtract this nested ternary operation into an independent statement.(õÖÛ8ùß¼½˜/
+X	java:S125e"<This block of commented-out lines of code should be removed.(ÎİÖœ8†åñÂ˜/
+[
+java:S4973K"9Use the "equals" method if value comparison was intended.(›ˆæàıÿÿÿÿ8ùß¼½˜/
+a
+java:S3358_"DExtract this nested ternary operation into an independent statement.(¡ÉÕÍ8†åñÂ˜/
+L
+java:S5411:"*Use the primitive boolean expression here.(ÿ‰·ÿøÿÿÿÿ8…¶Â˜/
+g
+java:S3358ˆ"DExtract this nested ternary operation into an independent statement.(ÔÄßŒşÿÿÿÿ8Èµ–˜/
+\
+java:S1118":Add a private constructor to hide the implicit public one.(–ìÓùÿÿÿÿ8ÙŠÔ–˜/

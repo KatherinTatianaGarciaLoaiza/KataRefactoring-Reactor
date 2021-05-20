@@ -17,26 +17,51 @@ import java.util.stream.Stream;
 public class HelperKata {
     private static final  String EMPTY_STRING = "";
     private static String ANTERIOR_BONO = null;
+    protected static String errorMessage = null;
+    protected static String dateValidated = null;
+    protected static String bonoEnviado = null;
+    private static Set<String> codes = new HashSet<>();
+    private static AtomicInteger counter = new AtomicInteger(0);
+
 
     public static Flux<CouponDetailDto> getListFromBase64File(final String fileBase64) {
-        return getCouponDetailDtoFlux(createFluxFrom(fileBase64));
-    }
-
-    private static Flux<CouponDetailDto> getCouponDetailDtoFlux(Flux<String> fileBase64) {
-        AtomicInteger counter = new AtomicInteger(0);
         String characterSeparated = FileCSVEnum.CHARACTER_DEFAULT.getId();
-        Set<String> codes = new HashSet<>();
-        return          fileBase64
-                        .map(line -> getTupleOfLine(line, line.split(characterSeparated), characterSeparated))
-                        .map(tuple -> getCouponDetailDto(counter, codes, tuple));
+        return createFluxFrom(fileBase64).map(cupon -> optionalCoupon(generateCoupon(cupon.split(characterSeparated))));
     }
 
-    private static CouponDetailDto getCouponDetailDto(AtomicInteger counter, Set<String> codes, Tuple2<String, String> tuple) {
-        String errorMessage = getErrorMessage(tuple, codes);
-        String dateValidated = getDateValidated(tuple, errorMessage);
+    private static CouponDetailDto optionalCoupon(Coupon coupon){
+       return Optional.of(coupon)
+                .filter(HelperKata::emptyString)
+                .map(cuponFilter -> errorEmpty())
+               .orElseGet(() -> duplicateAndGetCouponDTO()
+               );
+    }
 
+    private static CouponDetailDto duplicateAndGetCouponDTO() {
+        validateDuplicate();
+        return getCouponDetailDto();
+    }
+
+    private static CouponDetailDto errorEmpty() {
+        errorMessage = ExperienceErrorsEnum.FILE_ERROR_COLUMN_EMPTY.toString();
+        return getCouponDetailDto();
+    }
+
+    private static Coupon generateCoupon (String[] array){
+        Coupon cupon = new Coupon(array[0], array[1]);
+        return cupon;
+    }
+
+    private static void validateDuplicate(){
+        if (!codes.add(bonoEnviado)){
+            dateValidated = null;
+            errorMessage = ExperienceErrorsEnum.FILE_ERROR_CODE_DUPLICATE.toString();
+        }
+    }
+
+    private static CouponDetailDto getCouponDetailDto() {
         return CouponDetailDto.aCouponDetailDto()
-                .withCode(evaluacionesDelBonoAnterior(tuple.getT1()))
+                .withCode(evaluacionesDelBonoAnterior())
                 .withDueDate(dateValidated)
                 .withNumberLine(counter.incrementAndGet())
                 .withMessageError(errorMessage)
@@ -44,29 +69,11 @@ public class HelperKata {
                 .build();
     }
 
-    private static String getDateValidated(Tuple2<String, String> tuple, String errorMessage) {
-        return (errorMessage == null) ? tuple.getT2() : null;
+    private static boolean emptyString(Coupon cupon) {
+        return cupon.getCode().equals(EMPTY_STRING) || cupon.getDate().equals(EMPTY_STRING);
     }
 
-    public static String getErrorMessage(Tuple2<String, String> tuple , Set<String> codes){
-        Map<String, Boolean> error = new LinkedHashMap<>();
-        error.put(ExperienceErrorsEnum.FILE_ERROR_COLUMN_EMPTY.toString(), isBlank(tuple));
-        error.put(ExperienceErrorsEnum.FILE_ERROR_CODE_DUPLICATE.toString(), (!codes.add(tuple.getT1())));
-        error.put(ExperienceErrorsEnum.FILE_ERROR_DATE_PARSE.toString(), (!validateDateRegex(tuple.getT2())));
-        error.put(ExperienceErrorsEnum.FILE_DATE_IS_MINOR_OR_EQUALS.toString(), validateDateIsMinor(tuple.getT2()));
-        for (Map.Entry<String, Boolean> errorbono : error.entrySet()){
-            if(errorbono.getValue()){
-                return errorbono.getKey();
-            }
-        }
-        return null;
-    }
-
-    private static boolean isBlank(Tuple2<String, String> tuple) {
-        return tuple.getT1().isBlank() || tuple.getT2().isBlank();
-    }
-
-    private static String evaluacionesDelBonoAnterior(String bonoEnviado){
+    private static String evaluacionesDelBonoAnterior(){
         return (ANTERIOR_BONO == null || ANTERIOR_BONO.equals("")) ? bonoVacioONullo(bonoEnviado) : bonoAnteriorIgualODiferenteAlEnviado(bonoEnviado);
     }
 
@@ -102,24 +109,20 @@ public class HelperKata {
     }
 
     private static boolean bonoCharacterAndLength(String bonoIn){
-        return bonoIn.chars().allMatch(Character::isDigit) && bonoLengthHigher(bonoIn.length(), 12)
-                && bonoLengthSmaller(bonoIn.length(), 13);
+        return bonoIn.chars().allMatch(Character::isDigit) && validateMajorMinor(bonoIn.length(), 12)
+                && validateMajorMinor(13, bonoIn.length());
     }
     
     private static boolean bonoStartWithAndLength(String bonoIn){
-        return bonoIn.startsWith("*") && bonoLengthHigher(bonoIn.replace("*", "").length(),1)
-                 && bonoLengthSmaller(bonoIn.replace("*", "").length(), 43);
+        return bonoIn.startsWith("*") && validateMajorMinor(bonoIn.replace("*", "").length(),1)
+                 && validateMajorMinor(43, bonoIn.replace("*", "").length());
     }
 
-    private static boolean bonoLengthHigher(int bonoInLength, int number){
-        return (bonoInLength >= number);
-    }
-
-    private static boolean bonoLengthSmaller(int bonoInLength, int number){
-        return (bonoInLength <= number);
+    private static boolean validateMajorMinor(int biggerNumber, int minorNumber){
+        return (biggerNumber >= minorNumber);
     }
     
-    private static boolean validateDateRegex(String dateForValidate) {
+    static boolean validateDateRegex(String dateForValidate) {
         String regex = FileCSVEnum.PATTERN_DATE_DEFAULT.getId();
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(dateForValidate);
@@ -133,7 +136,7 @@ public class HelperKata {
     private static Tuple2<String, String> getTupleOfLine(String line, String[] array, String characterSeparated) {
         return  arrayCheck(array)
                 ? Tuples.of(EMPTY_STRING, EMPTY_STRING)
-                : lengthArray(array , 2)
+                : validateMajorMinor(1, array.length)
                 ? lineStartWith(characterSeparated, line)
                 ? Tuples.of(EMPTY_STRING, array[0])
                 : Tuples.of(array[0], EMPTY_STRING)
@@ -143,11 +146,7 @@ public class HelperKata {
     private static boolean arrayCheck(String[] array){
         return (Objects.isNull(array)) || (array.length == 0);
     }
-    
-    private static boolean lengthArray(String[] array, int number){
-        return array.length < number;
-    }
-    
+
     private static boolean lineStartWith(String characterSeparated, String line){
         return line.startsWith(characterSeparated);
     }
