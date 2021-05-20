@@ -97,17 +97,22 @@ public class HelperKata {
     }
 
     private static String typeBono(String bonoIn) {
-        return Optional.of(bonoIn)
-                .filter(HelperKata::bonoCharacterAndLength)
-                .map(er -> ValidateCouponEnum.EAN_39.getTypeOfEnum())
-                .orElse(ValidateCouponEnum.ALPHANUMERIC.getTypeOfEnum());
+        return  bonoCharacterAndLength(bonoIn)
+                ? ValidateCouponEnum.EAN_13.getTypeOfEnum()
+                : bonoStartWithAndLength(bonoIn)
+                ? ValidateCouponEnum.EAN_39.getTypeOfEnum()
+                : ValidateCouponEnum.ALPHANUMERIC.getTypeOfEnum();
+//        return Optional.of(bonoIn)
+//                .filter(HelperKata::bonoCharacterAndLength)
+//                .map(er -> ValidateCouponEnum.EAN_39.getTypeOfEnum())
+//                .orElse(ValidateCouponEnum.ALPHANUMERIC.getTypeOfEnum());
     }
 
     private static boolean bonoCharacterAndLength(String bonoIn){
         return bonoIn.chars().allMatch(Character::isDigit) && validateMajorMinor(bonoIn.length(), 12)
                 && validateMajorMinor(13, bonoIn.length());
     }
-    
+
     private static boolean bonoStartWithAndLength(String bonoIn){
         return bonoIn.startsWith("*") && validateMajorMinor(bonoIn.replace("*", "").length(),1)
                  && validateMajorMinor(43, bonoIn.replace("*", "").length());
